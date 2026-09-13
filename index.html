@@ -138,12 +138,29 @@
   }
   .progress-label{font-size:.78rem; color:var(--ink-soft); font-weight:700; white-space:nowrap;}
 
-  /* ---------- Dialogue ---------- */
-  .dialogue{
-    display:grid; grid-template-columns:1fr 1fr; gap:14px;
-    margin-bottom:14px;
+  /* ---------- Game layout: dialogue+controls on the left, map on the right ---------- */
+  .game-layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+      "dialogue map"
+      "controls map";
+    align-items:start;
+    gap:14px;
   }
-  @media (max-width:620px){ .dialogue{grid-template-columns:1fr;} }
+  @media (max-width:760px){
+    .game-layout{
+      grid-template-columns:1fr;
+      grid-template-areas:"dialogue" "map" "controls";
+    }
+  }
+
+  .dialogue{
+    grid-area:dialogue;
+    display:flex; flex-direction:column; gap:14px;
+  }
+
+  .game-controls{ grid-area:controls; }
 
   .speech{
     display:flex; align-items:flex-start; gap:10px;
@@ -170,9 +187,10 @@
 
   /* ---------- Map ---------- */
   .map-wrap{
+    grid-area:map;
     position:relative; border-radius:20px; overflow:hidden;
     border:4px solid #3f6b3f; box-shadow:0 10px 24px -12px rgba(20,40,20,.5);
-    width:100%; max-width:720px; margin:0 auto;
+    width:100%; max-width:520px; margin:0 auto;
   }
   .map-wrap img{display:block; width:100%; height:auto;}
 
@@ -410,6 +428,7 @@
       </div>
     </div>
 
+    <div class="game-layout">
     <div class="dialogue">
       <div class="speech speech--visitor">
         <div class="avatar" aria-hidden="true">
@@ -436,11 +455,15 @@
       <!-- hotspot buttons injected by JS -->
     </div>
 
-    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    <div class="game-controls">
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
 
-    <div class="controls-row">
-      <button class="btn secondary" id="nextBtn" style="display:none;">Next round →</button>
+      <div class="controls-row">
+        <button class="btn secondary" id="nextBtn" style="display:none;">Next round →</button>
+      </div>
     </div>
+
+    </div><!-- /game-layout -->
 
     <!-- Phase transition overlay -->
     <div class="overlay" id="phaseOverlay" hidden>
