@@ -108,7 +108,6 @@
     padding:7px 16px; border-radius:999px; box-shadow:0 3px 0 rgba(0,0,0,.12) inset, 0 4px 10px -4px rgba(0,0,0,.35);
     white-space:nowrap;
   }
-  .phase-pill[data-phase="2"]{background:linear-gradient(180deg,#ff8a5c,#c94623);}
   .phase-pill[data-phase="purpose"]{background:linear-gradient(180deg,#7d9bf2,var(--purpose-dark));}
 
   .menu-btn{
@@ -272,7 +271,7 @@
   .btn:focus-visible{outline:3px solid var(--focus); outline-offset:3px;}
   .btn.secondary{background:linear-gradient(180deg,#4fd18a,var(--accent-2)); box-shadow:0 4px 0 var(--accent-2-dark), 0 8px 16px -6px rgba(31,122,77,.5);}
 
-  /* ---------- Overlays (phase transition + final) ---------- */
+  /* ---------- Overlay (final) ---------- */
   .overlay{
     position:absolute; inset:0; z-index:20;
     display:flex; align-items:center; justify-content:center; text-align:center;
@@ -465,16 +464,6 @@
 
     </div><!-- /game-layout -->
 
-    <!-- Phase transition overlay -->
-    <div class="overlay" id="phaseOverlay" hidden>
-      <div class="overlay-card">
-        <svg class="medal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#ffc93c" stroke="#a8770b" stroke-width="3"/><path d="M32 14l4.5 9.6 10.5 1-8 7.3 2.3 10.5L32 37.2 22.7 42.4 25 31.9l-8-7.3 10.5-1z" fill="#fff8ec"/></svg>
-        <h2 class="display">Great job! 🎉</h2>
-        <p>You found every place with just one clue! Now you're ready for <strong>Challenge Mode</strong> — use TWO clues at once to find each place!</p>
-        <button class="btn" id="startPhase2Btn">Start Challenge Mode</button>
-      </div>
-    </div>
-
     <!-- Final overlay -->
     <div class="overlay" id="finalOverlay" hidden>
       <div class="overlay-card">
@@ -525,43 +514,38 @@
 
   /* ---------------------------------------------------------------------
      GAME 1: "Follow the Clue" — spatial prepositions
-     Phase 1: one clue per place, single relationship, easy -> harder.
-     Phase 2: two clues per place, must be combined to find the answer.
+     A single pool of 22 rounds (some with one clue, some with two), shuffled
+     into a new random order every time the game is started.
      Every clue below was checked by hand (and by script) against the grid.
   ------------------------------------------------------------------------ */
-  var CLUES_PHASE1 = [
-    { target:"bank",         clue:"It's above the train station." },
+  var CLUES = [
+    { target:"bank",         clue:"It's behind the train station." },
     { target:"trainStation", clue:"It's in front of the bank." },
-    { target:"parkingLot",   clue:"It's below the train station." },
+    { target:"parkingLot",   clue:"It's in front of the train station." },
     { target:"library",      clue:"It's behind the bus stop." },
     { target:"busStop",      clue:"It's across from the library." },
-    { target:"map",          clue:"It's below the market." },
+    { target:"map",          clue:"It's across from the market." },
     { target:"sportsCenter", clue:"It's next to the bank." },
     { target:"castle",       clue:"It's next to the library." },
-    { target:"clockTower",   clue:"It's close to the train station." },
+    { target:"clockTower",   clue:"It's close to the train station and in front of the sports center." },
     { target:"market",       clue:"It's next to the bus stop." },
-    { target:"fair",         clue:"It's between the parking lot and the map." }
-  ];
-
-  var CLUES_PHASE2 = [
-    { target:"bank",         clue:"It's next to the sports center, and it's above the train station." },
-    { target:"castle",       clue:"It's next to the sports center, and it's above the market." },
-    { target:"sportsCenter", clue:"It's next to the castle, and it's above the clock tower." },
-    { target:"library",      clue:"It's next to the castle, and it's above the bus stop." },
-    { target:"trainStation", clue:"It's next to the clock tower, and it's below the bank." },
-    { target:"market",       clue:"It's next to the clock tower, and it's below the castle." },
-    { target:"clockTower",   clue:"It's next to the market, and it's below the sports center." },
-    { target:"busStop",      clue:"It's next to the market, and it's below the library." },
-    { target:"parkingLot",   clue:"It's next to the fair, and it's below the train station." },
-    { target:"map",          clue:"It's next to the fair, and it's below the market." },
-    { target:"fair",         clue:"It's between the parking lot and the map, and it's below the clock tower." }
+    { target:"fair",         clue:"It's between the parking lot and the map." },
+    { target:"bank",         clue:"It's next to the sports center, and it's behind the train station." },
+    { target:"castle",       clue:"It's next to the sports center, and it's behind the market." },
+    { target:"sportsCenter", clue:"It's next to the castle, and it's behind the clock tower." },
+    { target:"library",      clue:"It's next to the castle, and it's behind the bus stop." },
+    { target:"trainStation", clue:"It's next to the clock tower, and it's in front of the bank." },
+    { target:"market",       clue:"It's next to the clock tower, and it's in front of the castle." },
+    { target:"clockTower",   clue:"It's next to the market, and it's in front of the sports center." },
+    { target:"busStop",      clue:"It's next to the market, and it's in front of the library." },
+    { target:"parkingLot",   clue:"It's next to the fair, and it's in front of the train station." },
+    { target:"map",          clue:"It's next to the fair, and it's in front of the market." },
+    { target:"fair",         clue:"It's between the parking lot and the map, and it's in front of the clock tower." }
   ];
 
   var CLUE_MSG = {
-    goodP1: ["Great job!", "Excellent!", "That's right!", "You found it!", "Awesome!"],
-    badP1:  ["Almost! Look at the clue again.", "Not quite. Let's check the map!", "Try again!", "Look carefully at the position of the places."],
-    goodP2: ["Amazing! You used both clues!", "Excellent detective work!", "Perfect! You found the place using two clues!"],
-    badP2:  ["Look at both clues carefully!", "One clue is not enough. Check the second clue too!", "Try again and use both pieces of information."]
+    good: ["Great job!", "Excellent!", "That's right!", "You found it!", "Awesome!", "Excellent detective work!", "Perfect! You found the right place!"],
+    bad:  ["Almost! Look at the clue again.", "Not quite. Let's check the map!", "Try again!", "Look carefully at the position of the places.", "Read the clue carefully!"]
   };
 
   /* ---------------------------------------------------------------------
@@ -590,17 +574,12 @@
     bad:  ["Almost! Read the sentence again.", "Not quite. What do people do there?", "Try again!", "Think about why the visitor is going there."]
   };
 
-  var GAMES = {
-    clues:   { id:"clues",   title:"Follow the Clue", hasTwoPhases:true },
-    purpose: { id:"purpose", title:"Going Places",     hasTwoPhases:false }
-  };
-
   /* ---------------------------------------------------------------------
      STATE
   ------------------------------------------------------------------------ */
   var state = {
     game: null,       // "clues" | "purpose"
-    phase: 1,
+    rounds: [],
     roundIndex: 0,
     stars: 0,
     points: 0,
@@ -630,11 +609,9 @@
   var progressLabel = document.getElementById("progressLabel");
   var starCount = document.getElementById("starCount");
   var pointCount = document.getElementById("pointCount");
-  var phaseOverlay = document.getElementById("phaseOverlay");
   var finalOverlay = document.getElementById("finalOverlay");
   var finalHeading = document.getElementById("finalHeading");
   var finalText = document.getElementById("finalText");
-  var startPhase2Btn = document.getElementById("startPhase2Btn");
   var playAgainBtn = document.getElementById("playAgainBtn");
   var backToMenuBtn = document.getElementById("backToMenuBtn");
   var finalScore = document.getElementById("finalScore");
@@ -664,6 +641,15 @@
 
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
   function clearHotspotStates(){
     Object.keys(hotspotEls).forEach(function(key){
       var el = hotspotEls[key];
@@ -675,10 +661,7 @@
   /* ---------------------------------------------------------------------
      Round data lookup, generic across both games
   ------------------------------------------------------------------------ */
-  function currentRounds(){
-    if(state.game === "purpose") return PURPOSE_ROUNDS;
-    return state.phase === 1 ? CLUES_PHASE1 : CLUES_PHASE2;
-  }
+  function currentRounds(){ return state.rounds; }
   function currentRound(){ return currentRounds()[state.roundIndex]; }
 
   function renderRound(){
@@ -704,13 +687,8 @@
       visitorText.textContent = "Excuse me. Can you help me, please? Where's the _______?";
       guideWho.textContent = "Town Guide";
       clueText.textContent = round.clue;
-      if(state.phase === 1){
-        phasePill.textContent = "Phase 1 · Follow the Clue";
-        phasePill.setAttribute("data-phase","1");
-      } else {
-        phasePill.textContent = "Phase 2 · Challenge Mode";
-        phasePill.setAttribute("data-phase","2");
-      }
+      phasePill.textContent = "Phase 1 · Follow the Clue";
+      phasePill.setAttribute("data-phase","1");
     }
   }
 
@@ -782,13 +760,10 @@
 
       var earnedStar = state.attempts === 1;
       if(earnedStar) state.stars++;
-      var basePoints = state.game === "purpose" ? 10 : (state.phase === 1 ? 10 : 20);
-      state.points += basePoints;
+      state.points += 10;
       updateScoreDisplay();
 
-      var msg;
-      if(state.game === "purpose") msg = pick(PURPOSE_MSG.good);
-      else msg = state.phase === 1 ? pick(CLUE_MSG.goodP1) : pick(CLUE_MSG.goodP2);
+      var msg = state.game === "purpose" ? pick(PURPOSE_MSG.good) : pick(CLUE_MSG.good);
 
       feedback.innerHTML = iconGood + "<span>" + msg + (earnedStar ? " ⭐" : "") + "</span>";
       feedback.className = "feedback show good";
@@ -797,9 +772,7 @@
     } else {
       btn.classList.add("is-wrong");
       setTimeout(function(){ btn.classList.remove("is-wrong"); }, 500);
-      var bad;
-      if(state.game === "purpose") bad = pick(PURPOSE_MSG.bad);
-      else bad = state.phase === 1 ? pick(CLUE_MSG.badP1) : pick(CLUE_MSG.badP2);
+      var bad = state.game === "purpose" ? pick(PURPOSE_MSG.bad) : pick(CLUE_MSG.bad);
       feedback.innerHTML = iconBad + "<span>" + bad + "</span>";
       feedback.className = "feedback show bad";
     }
@@ -819,25 +792,8 @@
       renderRound();
     } else {
       progressFill.style.width = "100%";
-      if(state.game === "clues" && state.phase === 1){
-        showPhaseOverlay();
-      } else {
-        showFinal();
-      }
+      showFinal();
     }
-    scrollGameIntoView();
-  }
-
-  function showPhaseOverlay(){
-    phaseOverlay.hidden = false;
-    if(!reduceMotion) confettiBurst(40);
-  }
-
-  function startPhase2(){
-    phaseOverlay.hidden = true;
-    state.phase = 2;
-    state.roundIndex = 0;
-    renderRound();
     scrollGameIntoView();
   }
 
@@ -847,7 +803,7 @@
       finalText.textContent = "You read every sentence and found exactly the right place in town, every time!";
     } else {
       finalHeading.textContent = "Town Explorer Master! 🏆";
-      finalText.textContent = "You used one clue, then two clues, and helped the visitor find every place in town!";
+      finalText.textContent = "You followed the clues and helped the visitor find every place in town!";
     }
     finalOverlay.hidden = false;
     finalScore.textContent = "⭐ " + state.stars + " stars · " + state.points + " pts";
@@ -859,11 +815,10 @@
   ------------------------------------------------------------------------ */
   function startGame(gameId){
     state.game = gameId;
-    state.phase = 1;
+    state.rounds = gameId === "clues" ? shuffle(CLUES) : PURPOSE_ROUNDS;
     state.roundIndex = 0;
     state.stars = 0;
     state.points = 0;
-    phaseOverlay.hidden = true;
     finalOverlay.hidden = true;
     updateScoreDisplay();
     menuScreen.hidden = true;
@@ -874,7 +829,6 @@
   function goToMenu(){
     playArea.hidden = true;
     menuScreen.hidden = false;
-    phaseOverlay.hidden = true;
     finalOverlay.hidden = true;
     state.game = null;
   }
@@ -888,7 +842,6 @@
   playPurposeBtn.addEventListener("click", function(){ startGame("purpose"); });
   menuBtn.addEventListener("click", goToMenu);
   nextBtn.addEventListener("click", goToNext);
-  startPhase2Btn.addEventListener("click", startPhase2);
   playAgainBtn.addEventListener("click", restartCurrentGame);
   backToMenuBtn.addEventListener("click", goToMenu);
 
