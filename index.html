@@ -173,8 +173,9 @@
     position:relative; border-radius:20px; overflow:hidden;
     border:4px solid #3f6b3f; box-shadow:0 10px 24px -12px rgba(20,40,20,.5);
     background:#bfe0c9;
+    width:100%; aspect-ratio:3/2; max-height:55vh; margin:0 auto;
   }
-  .map-wrap img{display:block; width:100%; height:auto;}
+  .map-wrap img{display:block; width:100%; height:100%; object-fit:contain;}
 
   .hotspot{
     position:absolute; margin:0; padding:0; border:none; background:transparent;
@@ -770,7 +771,7 @@
       feedback.innerHTML = iconGood + "<span>" + msg + (earnedStar ? " ⭐" : "") + "</span>";
       feedback.className = "feedback show good";
       nextBtn.style.display = "inline-block";
-      nextBtn.focus();
+      nextBtn.focus({preventScroll:true});
     } else {
       btn.classList.add("is-wrong");
       setTimeout(function(){ btn.classList.remove("is-wrong"); }, 500);
@@ -779,6 +780,13 @@
       else bad = state.phase === 1 ? pick(CLUE_MSG.badP1) : pick(CLUE_MSG.badP2);
       feedback.innerHTML = iconBad + "<span>" + bad + "</span>";
       feedback.className = "feedback show bad";
+    }
+  }
+
+  var card = document.getElementById("card");
+  function scrollGameIntoView(){
+    if(card && card.scrollIntoView){
+      card.scrollIntoView({behavior: reduceMotion ? "auto" : "smooth", block:"start"});
     }
   }
 
@@ -795,6 +803,7 @@
         showFinal();
       }
     }
+    scrollGameIntoView();
   }
 
   function showPhaseOverlay(){
@@ -807,6 +816,7 @@
     state.phase = 2;
     state.roundIndex = 0;
     renderRound();
+    scrollGameIntoView();
   }
 
   function showFinal(){
